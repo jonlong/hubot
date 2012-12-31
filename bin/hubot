@@ -23,6 +23,7 @@ Switches = [
   [ "-l", "--alias ALIAS",     "Enable replacing the robot's name with alias" ],
   [ "-n", "--name NAME",       "The name of the robot in chat" ],
   [ "-s", "--enable-slash",    "Enable replacing the robot's name with '/' (deprecated)" ],
+  [ "-r", "--scripts PATH",    "Alternative scripts path" ],
   [ "-v", "--version",         "Displays the version of hubot installed" ]
 ]
 
@@ -31,6 +32,7 @@ Options =
   alias: false
   create: false
   enableHttpd: true
+  scripts: []
   name: "Hubot"
   path: "."
 
@@ -56,6 +58,9 @@ Parser.on "alias", (opt, value) ->
 
 Parser.on "name", (opt, value) ->
   Options.name = value
+
+Parser.on "scripts", (opt, value) ->
+  Options.scripts.push(value)
 
 Parser.on "enable-slash", (opt) ->
   console.log "WARNING: -s and --enable-slash are deprecated please use -l or --alias '/'"
@@ -101,6 +106,13 @@ else
           scriptsPath = Path.resolve "node_modules", "hubot-scripts", "src", "scripts"
           robot.loadHubotScripts scriptsPath, scripts
 
+    for path in Options.scripts
+      if path[0] == '/'
+        scriptsPath = path
+      else
+        scriptsPath = Path.resolve ".", path
+      robot.load scriptsPath
+      
   robot.adapter.on 'connected', loadScripts
 
   robot.run()
